@@ -9,21 +9,21 @@
     <div id="mqttData"></div>
 
     <script>
-        // Mosquitto MQTT broker에 연결합니다.
+        // Mosquitto MQTT broker에 연결
         var client = mqtt.connect('wss://test.mosquitto.org:8081/mqtt');
 
         // 연결되었을 때 실행되는 함수
         client.on('connect', function () {
             console.log('Connected to Mosquitto MQTT broker');
 
-            // topic에 subscribe 합니다.
+            // topic에 subscribe
             client.subscribe('hikingMetrics');
 
             // 메시지를 받았을 때 실행되는 함수
             client.on('message', function (topic, message) {
                 console.log('Received message on topic ' + topic + ': ' + message.toString());
 
-                // 받은 메시지를 처리하고, HTML에 표시합니다.
+                // 받은 메시지를 처리하고, HTML에 표시
                 var mqttDataDiv = document.getElementById('mqttData');
                 mqttDataDiv.innerHTML = 'Received message on topic ' + topic + ': ' + message.toString();
             });
