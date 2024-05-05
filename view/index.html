@@ -54,18 +54,18 @@
 
   <body>
 
-    <div id="mqttData"></div>
     <script>
-        // Mosquitto MQTT broker에 연결합니다.
+        // Connect to Mosquitto MQTT broker
         var client = mqtt.connect('wss://test.mosquitto.org:8081/mqtt');
 
-        // 연결되었을 때 실행되는 함수
+        // Function executed when connected
         client.on('connect', function () {
             console.log('Connected to Mosquitto MQTT broker');
 
-            // topic에 subscribe 합니다.
+            // Subscribe from topic
             client.subscribe('hikingMetrics');
 
+            // Test sample and publishing (Need to change to an annotation form.)
             const dummyMetrics = [
               {
                 userId: 'BZPGGB',
@@ -111,18 +111,15 @@
               }
             ]
 
-            const dummyPublishFunc = client.publish('hikingMetrics', JSON.stringify(dummyMetrics))
-            setInterval(dummyPublishFunc, 5000)
+            setInterval(function() {  // Callback function
+              client.publish('hikingMetrics', JSON.stringify(dummyMetrics));
+            }, 3000);
 
-            // 메시지를 받았을 때 실행되는 함수
+            // When a message is received, the function is executed
             client.on('message', function (topic, message) {
                 console.log('Received message on topic ' + topic + ': ' + message.toString());
 
-                // 받은 메시지를 처리하고, HTML에 표시합니다.
-                var mqttDataDiv = document.getElementById('mqttData');
-                console.log(mqttDataDiv)
-                mqttDataDiv.innerHTML = 'Received message on topic ' + topic + ': ' + message.toString();
-                
+                // Receive message and display them in HTML
                 const tableRows = JSON.parse(message).map((metric, index) => {
                 const tableRow = document.createElement('tr')
 
@@ -138,7 +135,8 @@
 
                 const weeklyHKTmColumn = document.createElement('td')
                 weeklyHKTmColumn.classList.add('weeklyHkTm');
-                // convert millisecond to second(divided by 1000) and convert second to minute(divided by 60)
+                // convert millisecond to second(divided by 1000)
+                // convert second to minute(divided by 60) & convert minute to hour(divided by 60)
                 const hours = Math.floor(metric.duration.total / 3600000);
                 const minutes = Math.floor((metric.duration.total % 3600000) / 60000);
                 weeklyHKTmColumn.textContent = hours + " 시간 " + minutes + " 분";
@@ -156,6 +154,10 @@
 
                 return tableRow
               })
+
+              // Remove existing template elements
+              const tableBody = document.querySelector('table > tbody');
+              tableBody.innerHTML = '';
             
               const parent = document.querySelector('table > tbody')
               tableRows.forEach((row) => {
@@ -164,7 +166,7 @@
             });
         });
 
-        // 연결이 끊어졌을 때 실행되는 함수
+        // Function is executed, when disconnected
         client.on('close', function () {
             console.log('Disconnected from Mosquitto MQTT broker');
         });
@@ -424,7 +426,7 @@
               <div class="card">
                 <div class="table-responsive text-nowrap">
                   <table class="table">
-                    <thead>
+                    <thead class="table-border-bottom-0">
                       <tr>
                         <th>랭킹</th>
                         <th>유저</th>
@@ -434,8 +436,8 @@
                       </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
-                      <tr class="table-primary">
-                        <td><i class="fab fa-angular fa-lg text-danger me-3"></i><strong></strong></td>
+                      <tr>
+                        <td id="ranking"><i class="fab fa-angular fa-lg text-danger me-3"></i><strong></strong></td>
                         <td id="userId"></td>
                         <td id="weeklyHkTm"></td>
                         <td id="weeklyHkDist"></td>
