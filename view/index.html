@@ -15,6 +15,7 @@
     />
 
     <title>Leaderboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.2.8/mqtt.min.js"></script>
 
     <meta name="description" content="" />
 
@@ -48,9 +49,126 @@
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="../assets/js/config.js"></script>
+
   </head>
 
   <body>
+
+    <div id="mqttData"></div>
+    <script>
+        // Mosquitto MQTT broker에 연결합니다.
+        var client = mqtt.connect('wss://test.mosquitto.org:8081/mqtt');
+
+        // 연결되었을 때 실행되는 함수
+        client.on('connect', function () {
+            console.log('Connected to Mosquitto MQTT broker');
+
+            // topic에 subscribe 합니다.
+            client.subscribe('hikingMetrics');
+
+            const dummyMetrics = [
+              {
+                userId: 'BZPGGB',
+                date: '2024-04-30',
+                calories: { total: 111 },
+                steps: { total: 2076 },
+                duration: { total: 1640000 },
+                distance: {
+                  total: 1.74,
+                  veryActive: 0.29,
+                  moderatelyActive: 0.61,
+                  lightlyActive: 0.84,
+                  sedentaryActive: 0
+                }
+              },
+              {
+                userId: 'BZPGGB',
+                date: '2024-05-01',
+                calories: { total: 242 },
+                steps: { total: 4256 },
+                duration: { total: 3077000 },
+                distance: {
+                  total: 5.18,
+                  veryActive: 2.93,
+                  moderatelyActive: 1.19,
+                  lightlyActive: 0.98,
+                  sedentaryActive: 0
+                }
+              },
+              {
+                userId: 'kyu',
+                date: '2024-05-01',
+                calories: { total: 0 },
+                steps: { total: 0 },
+                duration: { total: 0 },
+                distance: {
+                  total: 1.74,
+                  veryActive: 0.29,
+                  moderatelyActive: 0.61,
+                  lightlyActive: 0.84,
+                  sedentaryActive: 0
+                }
+              }
+            ]
+
+            const dummyPublishFunc = client.publish('hikingMetrics', JSON.stringify(dummyMetrics))
+            setInterval(dummyPublishFunc, 5000)
+
+            // 메시지를 받았을 때 실행되는 함수
+            client.on('message', function (topic, message) {
+                console.log('Received message on topic ' + topic + ': ' + message.toString());
+
+                // 받은 메시지를 처리하고, HTML에 표시합니다.
+                var mqttDataDiv = document.getElementById('mqttData');
+                console.log(mqttDataDiv)
+                mqttDataDiv.innerHTML = 'Received message on topic ' + topic + ': ' + message.toString();
+
+                mqttDataDiv.innerHTML = '';
+                
+                const tableRows = JSON.parse(message).map((metric, index) => {
+                const tableRow = document.createElement('tr')
+
+                const rankingColumn = document.createElement('td');
+                rankingColumn.classList.add('ranking');
+                rankingColumn.textContent = index + 1;
+                tableRow.appendChild(rankingColumn);
+
+                const userIdColumn = document.createElement('td')
+                userIdColumn.classList.add('userId');
+                userIdColumn.innerHTML = metric.userId
+                tableRow.appendChild(userIdColumn)
+
+                const weeklyHKTmColumn = document.createElement('td')
+                weeklyHKTmColumn.classList.add('weeklyHkTm');
+                weeklyHKTmColumn.innerHTML = metric.duration.total
+                tableRow.appendChild(weeklyHKTmColumn)
+                
+                const weeklyHkDistColumn = document.createElement('td')
+                weeklyHkDistColumn.classList.add('weeklyHkDist');
+                weeklyHkDistColumn.innerHTML = metric.distance.total
+                tableRow.appendChild(weeklyHkDistColumn)
+            
+                const caloryColumn = document.createElement('td')
+                caloryColumn.classList.add('calories');
+                caloryColumn.innerHTML = metric.calories.total
+                tableRow.appendChild(caloryColumn)
+
+                return tableRow
+              })
+            
+              const parent = document.querySelector('table > tbody')
+              tableRows.forEach((row) => {
+                parent.append(row)
+              })
+            });
+        });
+
+        // 연결이 끊어졌을 때 실행되는 함수
+        client.on('close', function () {
+            console.log('Disconnected from Mosquitto MQTT broker');
+        });
+    </script>
+
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
       <div class="layout-container">
@@ -316,82 +434,11 @@
                     </thead>
                     <tbody class="table-border-bottom-0">
                       <tr class="table-primary">
-                        <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>1</strong></td>
-                        <td>${userId}</td>
-                        <td>${weeklyHkTm}</td>
-                        <td>${weeklyHkDist}</td>
-                        <td>${calories}</td>
-                      </tr>
-                      <tr class="table-success">
-                        <td>
-                          <i class="fab fa-bootstrap fa-lg text-primary me-3"></i> <strong>2</strong>
-                        </td>
-                        <td>김순자</td>
-                        <td>시간</td>
-                        <td>km</td>
-                        <td>칼로리</td>
-                      </tr>
-                      <tr class="table-danger">
-                        <td><i class="fab fa-sketch fa-lg text-warning me-3"></i> <strong>3</strong></td>
-                        <td>홍명길</td>
-                        <td>시간</td>
-                        <td>km</td>
-                        <td>칼로리</td>
-                      </tr>
-                      <tr class="table-warning">
-                        <td><i class="fab fa-react fa-lg text-info me-3"></i> <strong>4</strong></td>
-                        <td>최미자</td>
-                        <td>시간</td>
-                        <td>km</td>
-                        <td>칼로리</td>
-                      </tr>
-                      <tr class="table-info">
-                        <td>
-                          <i class="fab fa-bootstrap fa-lg text-primary me-3"></i> <strong>5</strong>
-                        </td>
-                        <td>구석범</td>
-                        <td>시간</td>
-                        <td>km</td>
-                        <td>칼로리</td>
-                      </tr>
-                      <tr class="table-primary">
-                        <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>6</strong></td>
-                        <td>오순영</td>
-                        <td>시간</td>
-                        <td>km</td>
-                        <td>칼로리</td>
-                      </tr>
-                      <tr class="table-success">
-                        <td>
-                          <i class="fab fa-bootstrap fa-lg text-primary me-3"></i> <strong>7</strong>
-                        </td>
-                        <td>이영자</td>
-                        <td>시간</td>
-                        <td>km</td>
-                        <td>칼로리</td>
-                      </tr>
-                      <tr class="table-danger">
-                        <td><i class="fab fa-sketch fa-lg text-warning me-3"></i> <strong>8</strong></td>
-                        <td>이현식</td>
-                        <td>시간</td>
-                        <td>km</td>
-                        <td>칼로리</td>
-                      </tr>
-                      <tr class="table-warning">
-                        <td><i class="fab fa-react fa-lg text-info me-3"></i> <strong>9</strong></td>
-                        <td>박문종</td>
-                        <td>시간</td>
-                        <td>km</td>
-                        <td>칼로리</td>
-                      </tr>
-                      <tr class="table-info">
-                        <td>
-                          <i class="fab fa-bootstrap fa-lg text-primary me-3"></i> <strong>10</strong>
-                        </td>
-                        <td>신호승</td>
-                        <td>시간</td>
-                        <td>km</td>
-                        <td>칼로리</td>
+                        <td id="userId"><i class="fab fa-angular fa-lg text-danger me-3"></i><strong></strong></td>
+                        <td id="userId"></td>
+                        <td id="weeklyHkTm"></td>
+                        <td id="weeklyHkDist"></td>
+                        <td id="calories"></td>
                       </tr>
                     </tbody>
                   </table>
