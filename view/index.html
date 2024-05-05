@@ -123,7 +123,7 @@
                 console.log(mqttDataDiv)
                 mqttDataDiv.innerHTML = 'Received message on topic ' + topic + ': ' + message.toString();
 
-                mqttDataDiv.innerHTML = '';
+                mqttDataDiv.innerHTML = '';  // clear 방법 생각하기
                 
                 const tableRows = JSON.parse(message).map((metric, index) => {
                 const tableRow = document.createElement('tr')
