@@ -122,8 +122,6 @@
                 var mqttDataDiv = document.getElementById('mqttData');
                 console.log(mqttDataDiv)
                 mqttDataDiv.innerHTML = 'Received message on topic ' + topic + ': ' + message.toString();
-
-                mqttDataDiv.innerHTML = '';  // clear 방법 생각하기
                 
                 const tableRows = JSON.parse(message).map((metric, index) => {
                 const tableRow = document.createElement('tr')
@@ -140,17 +138,20 @@
 
                 const weeklyHKTmColumn = document.createElement('td')
                 weeklyHKTmColumn.classList.add('weeklyHkTm');
-                weeklyHKTmColumn.innerHTML = metric.duration.total
+                // convert millisecond to second(divided by 1000) and convert second to minute(divided by 60)
+                const hours = Math.floor(metric.duration.total / 3600000);
+                const minutes = Math.floor((metric.duration.total % 3600000) / 60000);
+                weeklyHKTmColumn.textContent = hours + " 시간 " + minutes + " 분";
                 tableRow.appendChild(weeklyHKTmColumn)
                 
                 const weeklyHkDistColumn = document.createElement('td')
                 weeklyHkDistColumn.classList.add('weeklyHkDist');
-                weeklyHkDistColumn.innerHTML = metric.distance.total
+                weeklyHkDistColumn.innerHTML = metric.distance.total + " km"
                 tableRow.appendChild(weeklyHkDistColumn)
             
                 const caloryColumn = document.createElement('td')
                 caloryColumn.classList.add('calories');
-                caloryColumn.innerHTML = metric.calories.total
+                caloryColumn.innerHTML = metric.calories.total + " 칼로리"
                 tableRow.appendChild(caloryColumn)
 
                 return tableRow
@@ -434,7 +435,7 @@
                     </thead>
                     <tbody class="table-border-bottom-0">
                       <tr class="table-primary">
-                        <td id="userId"><i class="fab fa-angular fa-lg text-danger me-3"></i><strong></strong></td>
+                        <td><i class="fab fa-angular fa-lg text-danger me-3"></i><strong></strong></td>
                         <td id="userId"></td>
                         <td id="weeklyHkTm"></td>
                         <td id="weeklyHkDist"></td>
